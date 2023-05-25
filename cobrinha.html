@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #game-board {
+            width: 400px;
+            height: 400px;
+            background-color: #eee;
+            position: relative;
+            border: 1px solid #999;
+            margin: 0 auto;
+        }
+
+        .snake {
+            position: absolute;
+            background-color: green;
+        }
+
+        .food {
+            position: absolute;
+            background-color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-board"></div>
+
+    <script>
+        // Configuração do jogo
+        var boardSize = 20;
+        var tileSize = 20;
+        var snakeSpeed = 200;
+        var snake = [{ x: 10, y: 10 }];
+        var direction = "right";
+        var food = { x: 5, y: 5 };
+        var score = 0;
+
+        // Elementos do DOM
+        var gameBoard = document.getElementById("game-board");
+
+        // Função para criar elementos no tabuleiro
+        function createGameElement(elementType, x, y) {
+            var element = document.createElement("div");
+            element.style.width = tileSize + "px";
+            element.style.height = tileSize + "px";
+            element.style.left = (x * tileSize) + "px";
+            element.style.top = (y * tileSize) + "px";
+            element.className = elementType;
+            return element;
+        }
+
+        // Função para desenhar a cobra
+        function drawSnake() {
+            for (var i = 0; i < snake.length; i++) {
+                var snakeElement = createGameElement("snake", snake[i].x, snake[i].y);
+                gameBoard.appendChild(snakeElement);
+            }
+        }
+
+        // Função para desenhar a comida
+        function drawFood() {
+            var foodElement = createGameElement("food", food.x, food.y);
+            gameBoard.appendChild(foodElement);
+        }
+
+        // Função para limpar o tabuleiro
+        function clearBoard() {
+            while (gameBoard.firstChild) {
+                gameBoard.removeChild(gameBoard.firstChild);
+            }
+        }
+
+        // Função para mover a cobra
+        function moveSnake() {
+            var head = Object.assign({}, snake[0]);
+
+            switch (direction) {
+                case "up":
+                    head.y -= 1;
+                    break;
+                case "down":
+                    head.y += 1;
+                    break;
+                case "left":
+                    head.x -= 1;
+                    break;
+                case "right":
+                    head.x += 1;
+                    break;
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+
+            if (isCollision()) {
+                clearInterval(gameLoop);
+                alert("Game Over! Pontuação: " + score);
+            }
+
+            clearBoard();
+            drawFood();
+            drawSnake();
+        }
+
+        // Função para gerar comida em uma posição aleatória
+        function generateFood() {
+            food.x = Math.floor(Math.random() * boardSize);
+            food.y = Math.floor(Math.random() * boardSize);
+        }
+
+        // Função para verificar colisão
+        function isCollision() {
+            var head = snake[0];
+
+            if (
+                head.x < 0 || head.y < 0 ||
+                head.x >= boardSize || head.y >= boardSize
+            ) {
+                return true;
+            }
+
+            for (var i = 1; i < snake.length; i++) {
+                if (snake[i].x === head.x && snake[i].y === head.y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Função para controlar a direção da cobra
+        function handleKeyDown(event) {
+            var key = event.keyCode;
+
+            switch (key) {
+                case 37:
+                    if (direction !== "right") {
+                        direction = "left";
+                    }
+                    break;
+                case 38:
+                    if (direction !== "down") {
+                        direction = "up";
+                    }
+                    break;
+                case 39:
+                    if (direction !== "left") {
+                        direction = "right";
+                    }
+                    break;
+                case 40:
+                    if (direction !== "up") {
+                        direction = "down";
+                    }
+                    break;
+            }
+        }
+
+        // Inicialização do jogo
+        function startGame() {
+            window.addEventListener("keydown", handleKeyDown);
+            generateFood();
+            gameLoop = setInterval(moveSnake, snakeSpeed);
+        }
+
+        // Iniciar o jogo
+        startGame();
+    </script>
+</body>
+</html>
